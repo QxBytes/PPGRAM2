@@ -35,6 +35,10 @@ p-pie-chart {
     height: 100%;
 }
 
+#albums {
+    display: contents;
+}
+
 .song-selector-container {
     display: flex;
     flex-wrap: wrap;

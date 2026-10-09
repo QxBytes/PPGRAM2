@@ -1,5 +1,7 @@
 import { Stacked } from '../common/index.js';
 
+/** @typedef {import('../data/albums.js').Album} Album */
+
 /** It loves managing songs.
  *  @author qxbytes
  *  @author bloopsoup (refactor) */
@@ -12,14 +14,17 @@ export default class SongManager {
     #enabledSongs
     /** @type {string} */
     #currentSong
+    /** @type {Map<string, Album>} */
+    #songAlbums
     /** @type {HTMLAudioElement} */
     #playing
 
     /** Create the state manager.
-     *  @param {string[]} songs - The songs. */
-    constructor(songs) {
+     *  @param {Album[]} albums - The albums. */
+    constructor(albums) {
         this.#callbacks = [];
-        this.#songs = new Set(songs);
+        this.#songAlbums = new Map(albums.flatMap(album => album.songs.map(song => [song, album])));
+        this.#songs = new Set(this.#songAlbums.keys());
         this.#enabledSongs = new Set();
         this.#currentSong = '';
         this.#playing = document.createElement('audio');
@@ -179,13 +184,14 @@ export default class SongManager {
     /** Updates system media metadata. */
     #updateMediaSessionMetadata() {
         if (!('mediaSession' in navigator) || !('MediaMetadata' in window)) return;
+        const album = this.#songAlbums.get(this.#currentSong);
 
         navigator.mediaSession.metadata = new MediaMetadata({
             title: this.#currentSong,
             artist: 'PPGRAM%',
+            album: album?.name || '',
             artwork: [{
-                src: new URL('images/git-doge/pp.png', document.baseURI).href,
-                sizes: '873x873',
+                src: new URL(album?.artwork || 'images/git-doge/pp.png', document.baseURI).href,
                 type: 'image/png'
             }]
         });

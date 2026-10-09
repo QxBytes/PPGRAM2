@@ -1,4 +1,5 @@
 import { Calendar, Counter, Stacked } from './common/index.js';
+import albums from './data/albums.js';
 import * as display from "./display/index.js";
 import { SongManager } from "./managers/index.js";
 
@@ -21,48 +22,19 @@ export default class Main {
         document.querySelectorAll('footer').forEach(element => element.removeAttribute('style'));
 
         // Wire the songs together
-        const manager = new SongManager([
-            'fallen',
-            'lullaby',
-            'cee',
-            'mint',
-            'rot',
-            'suim',
-            'away2',
-            'yune3',
-            'north',
-            'crawl',
-            'walk',
-            'incense',
-            'banjo',
-            'waken',
-            'relax',
-            'pin',
-            'clap',
-            'sol',
-            'lime',
-            'frame',
-            'waken1',
-            'relax1',
-            'reach',
-            'wound',
-            'crash',
-            'hello',
-            'yikes',
-            'think'
-        ]);
-        const elementIDs = [
-            'song-controls',
-            'peace-album',
-            'up-album',
-            'classic-album',
-            'discount-album'
-        ];
-
-        for (const elementID of elementIDs) {
-            // @ts-ignore
-            document.getElementById(elementID)?.link(manager);
+        const manager = new SongManager(albums);
+        const albumContainer = document.getElementById('albums');
+        if (albumContainer !== null) {
+            const albumElements = albums.flatMap(album => {
+                const element = new display.SongAlbum();
+                element.link(manager, album);
+                return [element, document.createElement('hr')];
+            });
+            albumContainer.replaceChildren(...albumElements);
         }
+
+        const controls = document.getElementById('song-controls');
+        if (controls instanceof display.SongControls) controls.link(manager);
         manager.setRandomSong();
 
         // Run update once and then set an interval
