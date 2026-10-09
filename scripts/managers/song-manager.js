@@ -25,10 +25,13 @@ export default class SongManager {
         this.#playing = document.createElement('audio');
         this.#playing.preload = 'auto';
         this.#playing.addEventListener('ended', () => this.setRandomSong());
+        this.#playing.addEventListener('play', () => this.#updateMediaSessionState());
+        this.#playing.addEventListener('pause', () => this.#updateMediaSessionState());
         this.#playing.addEventListener('error', () => {
             console.error(`Unable to load song: ${this.#currentSong}`, this.#playing.error);
         });
         document.body.appendChild(this.#playing);
+        this.#initializeMediaSession();
 
         // Load previous settings
         const disabledSongs = this.#load();
@@ -88,6 +91,7 @@ export default class SongManager {
 
         this.#playing.pause();
         this.#currentSong = song;
+        this.#updateMediaSessionMetadata();
         this.broadcast();
 
         this.#playing.src = `audio/${song}.mp3`;
@@ -157,5 +161,39 @@ export default class SongManager {
         this.#playing.pause();
         this.#playing.removeAttribute('src');
         this.#playing.load();
+    }
+
+    /** Initializes system media controls. */
+    #initializeMediaSession() {
+        if (!('mediaSession' in navigator)) return;
+
+        navigator.mediaSession.setActionHandler('play', () => {
+            if (!this.isPlaying) this.togglePlayback();
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+            if (this.isPlaying) this.togglePlayback();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => this.setRandomSong());
+    }
+
+    /** Updates system media metadata. */
+    #updateMediaSessionMetadata() {
+        if (!('mediaSession' in navigator) || !('MediaMetadata' in window)) return;
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: this.#currentSong,
+            artist: 'PPGRAM%',
+            artwork: [{
+                src: new URL('images/git-doge/pp.png', document.baseURI).href,
+                sizes: '873x873',
+                type: 'image/png'
+            }]
+        });
+    }
+
+    /** Updates system media playback state. */
+    #updateMediaSessionState() {
+        if (!('mediaSession' in navigator)) return;
+        navigator.mediaSession.playbackState = this.isPlaying ? 'playing' : 'paused';
     }
 }

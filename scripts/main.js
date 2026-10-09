@@ -48,7 +48,8 @@ export default class Main {
             'wound',
             'crash',
             'hello',
-            'yikes'
+            'yikes',
+            'think'
         ]);
         const elementIDs = [
             'song-controls',
@@ -73,9 +74,9 @@ export default class Main {
     static #update() {
         const nameChoices = ['cHRIS - mR oSU kING', 'walter', 'mrs. until', 'poopsicle'];
         const chosenName = Stacked.getChoice(nameChoices, Calendar.totalTodayDays);
-        const names = Array.from({length: Calendar.totalElapsedDays}, (_, i) => Stacked.getChoice(nameChoices, Calendar.totalTodayDays - i));
+        const names = Array.from({ length: Calendar.totalElapsedDays }, (_, i) => Stacked.getChoice(nameChoices, Calendar.totalTodayDays - i));
         const counter = new Counter(names);
-        
+
         // Calculate SUS exchange values
         const susCounter = new Counter([]);
         const susValues = [];
@@ -103,7 +104,7 @@ export default class Main {
         if (summaryHeader) summaryHeader.textContent = `stats (TOTAL ${names.length}) (SUS ${sus.toFixed(2)}%)`
         summaryList?.setAttribute('items', names.join(','));
         summaryPie?.setAttribute('items', names.join(','));
-        
+
         document.getElementById('exchange-line')?.setAttribute('values', susValues.join(','));
     }
 }
